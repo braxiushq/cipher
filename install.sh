@@ -24,7 +24,7 @@ else
 fi
 
 REPO="braxius-hq/cipher"
-BINARY_PATTERN="cipher-.*-linux-${DL_ARCH}"
+BINARY_PATTERN="cipher-.*-linux-${DL_ARCH}.gz"
 INSTALL_DIR="/usr/local/bin"
 
 echo "Installing latest release..."
@@ -35,7 +35,8 @@ if [ -z "$LATEST_URL" ]; then
     exit 1
 fi
 
-curl -sL -o cipher "$LATEST_URL"
+curl -sL -o cipher.gz "$LATEST_URL"
+gunzip cipher.gz
 
 chmod +x cipher
 echo "Copying to $INSTALL_DIR (requires sudo)..."
