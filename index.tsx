@@ -1,7 +1,6 @@
 #!/usr/bin/env bun
-import { execSync } from "node:child_process";
-import { rmSync, unlinkSync } from "node:fs";
 // SPDX-License-Identifier: AGPL-3.0-only
+import { rmSync, unlinkSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import {
@@ -11,6 +10,7 @@ import {
 	sweepResidueSync,
 } from "./lib/cleanup";
 import { clearAuth, resetConfig, setBaseUrl } from "./lib/config";
+import { runUpgrade } from "./lib/upgrade";
 import { APP_VERSION } from "./lib/version";
 
 const args = process.argv.slice(2);
@@ -53,28 +53,8 @@ Run without arguments to launch the interactive terminal UI.
 }
 
 if (command === "upgrade") {
-	console.log("Checking for updates...");
 	try {
-		const res = await fetch(
-			"https://api.github.com/repos/braxius-hq/cipher/releases/latest",
-		);
-		if (!res.ok) throw new Error(`GitHub API error: ${res.statusText}`);
-		const release = (await res.json()) as { tag_name?: unknown };
-		if (typeof release.tag_name !== "string") {
-			throw new Error("GitHub API response did not include a release tag");
-		}
-		const latestVersion = release.tag_name.replace(/^v/, "");
-
-		if (latestVersion === APP_VERSION) {
-			console.log(`Cipher is already up to date (v${APP_VERSION}).`);
-			process.exit(0);
-		}
-
-		console.log(`Upgrading from v${APP_VERSION} to v${latestVersion}...`);
-		execSync(
-			"curl -sL https://raw.githubusercontent.com/braxius-hq/cipher/main/install.sh | bash",
-			{ stdio: "inherit" },
-		);
+		await runUpgrade();
 	} catch (err) {
 		console.error(
 			"Upgrade failed:",
@@ -82,7 +62,6 @@ if (command === "upgrade") {
 		);
 		process.exit(1);
 	}
-	process.exit(0);
 }
 
 if (command === "uninstall") {

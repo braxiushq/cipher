@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { Spinner } from "./components/ui";
 import { COLORS } from "./lib/colors";
 import { getBearerToken } from "./lib/config";
-import { checkForUpdate } from "./lib/update";
+import { checkForUpdate } from "./lib/upgrade";
 import FileManagerScreen from "./screens/FileManagerScreen";
 import LoginScreen from "./screens/LoginScreen";
 import SignupScreen from "./screens/SignupScreen";
