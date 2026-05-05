@@ -10,13 +10,13 @@ import {
 	sweepResidueSync,
 } from "./lib/cleanup";
 import { clearAuth, resetConfig, setBaseUrl } from "./lib/config";
-import packageJson from "./package.json";
+import { APP_VERSION } from "./lib/version";
 
 const args = process.argv.slice(2);
 const command = args[0];
 
 if (command === "version") {
-	console.log(`Cipher CLI v${packageJson.version}`);
+	console.log(`Cipher CLI v${APP_VERSION}`);
 	process.exit(0);
 }
 
@@ -57,14 +57,12 @@ if (command === "upgrade") {
 		}
 		const latestVersion = release.tag_name.replace(/^v/, "");
 
-		if (latestVersion === packageJson.version) {
-			console.log(`Cipher is already up to date (v${packageJson.version}).`);
+		if (latestVersion === APP_VERSION) {
+			console.log(`Cipher is already up to date (v${APP_VERSION}).`);
 			process.exit(0);
 		}
 
-		console.log(
-			`Upgrading from v${packageJson.version} to v${latestVersion}...`,
-		);
+		console.log(`Upgrading from v${APP_VERSION} to v${latestVersion}...`);
 		execSync(
 			"curl -sL https://raw.githubusercontent.com/braxius-hq/cipher/main/install.sh | bash",
 			{ stdio: "inherit" },

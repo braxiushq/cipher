@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 import { createAuthClient } from "better-auth/client";
-import { inferAdditionalFields } from "better-auth/client/plugins";
+import {
+	emailOTPClient,
+	inferAdditionalFields,
+} from "better-auth/client/plugins";
 import {
 	clearAuth,
 	getBaseUrl,
@@ -19,6 +22,7 @@ export const authClient = createAuthClient({
 				iv: { type: "string", required: true },
 			},
 		}),
+		emailOTPClient(),
 	],
 	fetchOptions: {
 		auth: {

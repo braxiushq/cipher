@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 import { Box, Text, useInput } from "ink";
-import { Badge, Select } from "../components/ui";
+import { Select } from "../components/ui";
 import { COLORS } from "../lib/colors";
-import packageJson from "../package.json";
+import { APP_VERSION } from "../lib/version";
 
 interface Props {
 	onLogin: () => void;
@@ -41,7 +41,7 @@ export default function WelcomeScreen({
  ╚═════╝╚═╝╚═╝     ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝`}
 					</Text>
 					<Box marginTop={1}>
-						<Badge color={COLORS.SUCCESS}>Encrypted. Private. Yours.</Badge>
+						<Text dimColor>Encrypted. Private. Yours.</Text>
 					</Box>
 				</Box>
 				<Box marginTop={1}>
@@ -61,7 +61,7 @@ export default function WelcomeScreen({
 			</Box>
 
 			<Box justifyContent="flex-end" paddingX={2} marginBottom={0}>
-				<Text dimColor>v{packageJson.version}</Text>
+				<Text dimColor>v{APP_VERSION}</Text>
 			</Box>
 			{latestVersion && (
 				<Box justifyContent="flex-end" paddingX={2}>

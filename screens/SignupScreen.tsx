@@ -21,6 +21,7 @@ import {
 } from "../lib/config";
 import { generateSignupKeys } from "../lib/crypto";
 import { toHex } from "../lib/utils";
+import VerifyOtpScreen from "./VerifyOtpScreen";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -28,7 +29,7 @@ interface Props {
 	onBack: () => void;
 }
 
-type SignupMode = "form" | "submitting" | "verificationSent";
+type SignupMode = "form" | "submitting" | "verifyOtp";
 
 export default function SignupScreen({ onBack }: Props) {
 	const [mode, setMode] = useState<SignupMode>("form");
@@ -43,12 +44,7 @@ export default function SignupScreen({ onBack }: Props) {
 	const fieldCount = 5; // email, password, confirm, name, submit
 
 	useInput((_input, key) => {
-		if (mode === "submitting") return;
-
-		if (mode === "verificationSent") {
-			onBack();
-			return;
-		}
+		if (mode === "submitting" || mode === "verifyOtp") return;
 
 		if (key.escape) {
 			onBack();
@@ -121,7 +117,7 @@ export default function SignupScreen({ onBack }: Props) {
 			await setMasterKey(toHex(keys.masterKeyBytes));
 			await setDecPrivateKey(toHex(keys.privateKey));
 
-			setMode("verificationSent");
+			setMode("verifyOtp");
 		} catch (err) {
 			const msg =
 				err instanceof Error
@@ -175,24 +171,17 @@ export default function SignupScreen({ onBack }: Props) {
 					>
 						<Spinner label={status} />
 					</Box>
-				) : mode === "verificationSent" ? (
+				) : mode === "verifyOtp" ? (
+					<VerifyOtpScreen email={email} onVerified={onBack} onBack={onBack} />
+				) : (
 					<Box
 						flexDirection="column"
+						width={50}
+						paddingX={2}
 						borderStyle="single"
-						borderColor={COLORS.SUCCESS}
-						paddingX={3}
+						borderColor={COLORS.BORDER}
 						paddingY={1}
 					>
-						<Text bold color={COLORS.SUCCESS}>
-							Account created
-						</Text>
-						<Text dimColor>Check your email to verify your account.</Text>
-						<Box marginTop={1}>
-							<Text dimColor>Press any key to return to menu</Text>
-						</Box>
-					</Box>
-				) : (
-					<Box flexDirection="column" width={50} paddingX={2}>
 						<Box flexDirection="column">
 							<Box flexDirection="row" alignItems="center">
 								<Box width={12}>
@@ -217,7 +206,9 @@ export default function SignupScreen({ onBack }: Props) {
 							<Box flexDirection="row" alignItems="center" marginTop={1}>
 								<Box width={12}>
 									<Text
-										color={focusedIndex === 1 ? "cyan" : "gray"}
+										color={
+											focusedIndex === 1 ? COLORS.ACCENT : COLORS.TEXT_SECONDARY
+										}
 										bold={focusedIndex === 1}
 									>
 										Password:
@@ -235,7 +226,9 @@ export default function SignupScreen({ onBack }: Props) {
 							<Box flexDirection="row" alignItems="center" marginTop={1}>
 								<Box width={12}>
 									<Text
-										color={focusedIndex === 2 ? "cyan" : "gray"}
+										color={
+											focusedIndex === 2 ? COLORS.ACCENT : COLORS.TEXT_SECONDARY
+										}
 										bold={focusedIndex === 2}
 									>
 										Confirm:
@@ -253,7 +246,9 @@ export default function SignupScreen({ onBack }: Props) {
 							<Box flexDirection="row" alignItems="center" marginTop={1}>
 								<Box width={12}>
 									<Text
-										color={focusedIndex === 3 ? "cyan" : "gray"}
+										color={
+											focusedIndex === 3 ? COLORS.ACCENT : COLORS.TEXT_SECONDARY
+										}
 										bold={focusedIndex === 3}
 									>
 										Name:
@@ -271,15 +266,13 @@ export default function SignupScreen({ onBack }: Props) {
 
 						<Box marginTop={1} justifyContent="center">
 							<Box
-								borderStyle={focusedIndex === 4 ? "bold" : "single"}
-								borderColor={focusedIndex === 4 ? COLORS.ACCENT : COLORS.BORDER}
 								backgroundColor={
-									focusedIndex === 4 ? COLORS.ACCENT_BG : undefined
+									focusedIndex === 4 ? COLORS.ACCENT_BG : COLORS.BORDER
 								}
-								paddingX={2}
+								paddingX={3}
 							>
 								<Text
-									bold
+									bold={focusedIndex === 4}
 									color={
 										focusedIndex === 4
 											? COLORS.ACCENT_TEXT

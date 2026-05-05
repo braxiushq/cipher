@@ -176,7 +176,14 @@ export default function LoginScreen({ onSuccess, onBack }: Props) {
 						<Spinner label={status} />
 					</Box>
 				) : (
-					<Box flexDirection="column" width={50} paddingX={2}>
+					<Box
+						flexDirection="column"
+						width={50}
+						paddingX={2}
+						borderStyle="single"
+						borderColor={COLORS.BORDER}
+						paddingY={1}
+					>
 						<Box flexDirection="column">
 							<Box flexDirection="row" alignItems="center">
 								<Box width={12}>
@@ -221,15 +228,13 @@ export default function LoginScreen({ onSuccess, onBack }: Props) {
 
 						<Box marginTop={1} justifyContent="center">
 							<Box
-								borderStyle={focusedIndex === 2 ? "bold" : "single"}
-								borderColor={focusedIndex === 2 ? COLORS.ACCENT : COLORS.BORDER}
 								backgroundColor={
-									focusedIndex === 2 ? COLORS.ACCENT_BG : undefined
+									focusedIndex === 2 ? COLORS.ACCENT_BG : COLORS.BORDER
 								}
-								paddingX={2}
+								paddingX={3}
 							>
 								<Text
-									bold
+									bold={focusedIndex === 2}
 									color={
 										focusedIndex === 2
 											? COLORS.ACCENT_TEXT
