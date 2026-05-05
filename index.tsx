@@ -6,6 +6,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import {
 	cleanupSensitivePathsSync,
+	getTempDir,
 	sweepResidue,
 	sweepResidueSync,
 } from "./lib/cleanup";
@@ -13,6 +14,13 @@ import { clearAuth, resetConfig, setBaseUrl } from "./lib/config";
 import { APP_VERSION } from "./lib/version";
 
 const args = process.argv.slice(2);
+
+function getConfigDir(): string {
+	if (process.platform === "darwin") {
+		return join(homedir(), "Library", "Application Support", "cipher");
+	}
+	return join(homedir(), ".config", "cipher");
+}
 const command = args[0];
 
 if (command === "version") {
@@ -83,12 +91,12 @@ if (command === "uninstall") {
 	await clearAuth();
 
 	resetConfig();
-	rmSync(join(homedir(), ".config", "cipher"), {
+	rmSync(getConfigDir(), {
 		recursive: true,
 		force: true,
 	});
 
-	rmSync("/tmp/cipher-tmp", { recursive: true, force: true });
+	rmSync(getTempDir(), { recursive: true, force: true });
 
 	sweepResidueSync();
 

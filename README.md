@@ -17,7 +17,8 @@ Cipher implements strict end-to-end encryption. Your data is encrypted locally o
 ### Requirements
 
 - **Linux** — x64 (amd64) and ARM64 (aarch64)
-- Tested on Ubuntu, Debian, Fedora, Raspberry Pi 4+
+- **macOS** — Apple Silicon (M1/M2/M3/M4)
+- Tested on Ubuntu, Debian, Fedora, Raspberry Pi 4+, macOS 13+
 
 ### One-Line Installer
 ```bash

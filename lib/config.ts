@@ -2,7 +2,7 @@
 import Conf from "conf";
 import { CONF_PROJECT_NAME, DEFAULT_BASE_URL } from "./constants";
 
-const SERVICE_NAME = "cipher-vault";
+const SERVICE_NAME = "cipher";
 
 // ── Non-sensitive config (plaintext JSON, safe to store on disk) ─────────
 
