@@ -27,19 +27,35 @@ REPO="braxius-hq/cipher"
 BINARY_PATTERN="cipher-.*-linux-${DL_ARCH}"
 INSTALL_DIR="${HOME}/.local/bin"
 
-echo "Installing latest release (~40 MB)..."
-LATEST_URL=$(curl -s https://api.github.com/repos/$REPO/releases/latest | grep "browser_download_url" | grep -E "$BINARY_PATTERN" | cut -d '"' -f 4 | head -n 1)
+TMPDIR="$(mktemp -d)"
+BINARY="$TMPDIR/cipher"
+
+cleanup() {
+	rm -rf "$TMPDIR"
+}
+trap cleanup EXIT
+
+echo "Installing latest release (~100 MB)..."
+LATEST_URL=$(curl -sf https://api.github.com/repos/$REPO/releases/latest | grep "browser_download_url" | grep -E "$BINARY_PATTERN" | cut -d '"' -f 4 | head -n 1)
 
 if [ -z "$LATEST_URL" ]; then
-    echo "Error: Could not find latest release for Linux."
-    exit 1
+	echo "Error: Could not find latest release for Linux."
+	exit 1
 fi
 
-curl -#L -o cipher "$LATEST_URL"
+curl -#fL -o "$BINARY" "$LATEST_URL"
 
-chmod +x cipher
+FILE_TYPE=$(file -b "$BINARY" 2>/dev/null || true)
+if ! echo "$FILE_TYPE" | grep -qi "ELF"; then
+	echo "Error: Downloaded file is not a valid binary."
+	echo "       Got: $FILE_TYPE"
+	echo "       This may be a temporary issue. Try again later."
+	exit 1
+fi
+
+chmod +x "$BINARY"
 mkdir -p "$INSTALL_DIR"
-mv cipher "$INSTALL_DIR/cipher"
+mv "$BINARY" "$INSTALL_DIR/cipher"
 
 echo ""
 echo "✅ Cipher installed to $INSTALL_DIR/cipher."
