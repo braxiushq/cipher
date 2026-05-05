@@ -22,7 +22,8 @@
 		"ignore": "^7.0.5",
 		"ink": "^7.0.1",
 		"libsodium-wrappers": "^0.8.4",
-		"react": "^19.2.5"
+		"react": "^19.2.5",
+		"react-devtools-core": "^6.1.2"
 	},
 	"version": "0.0.3",
 	"description": "An end-to-end encrypted (E2EE) cloud storage client.",

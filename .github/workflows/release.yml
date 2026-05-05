@@ -25,12 +25,12 @@ jobs:
 
       - name: Build Linux (amd64)
         run: |
-          bun build --compile --minify --sourcemap --target=bun-linux-x64-modern index.tsx --outfile cipher-${{ github.ref_name }}-linux-amd64 --external react-devtools-core
+          bun build --compile --minify --sourcemap --target=bun-linux-x64-modern index.tsx --outfile cipher-${{ github.ref_name }}-linux-amd64
           gzip -9 cipher-${{ github.ref_name }}-linux-amd64
 
       - name: Build Linux (arm64)
         run: |
-          bun build --compile --minify --sourcemap --target=bun-linux-arm64 index.tsx --outfile cipher-${{ github.ref_name }}-linux-arm64 --external react-devtools-core
+          bun build --compile --minify --sourcemap --target=bun-linux-arm64 index.tsx --outfile cipher-${{ github.ref_name }}-linux-arm64
           gzip -9 cipher-${{ github.ref_name }}-linux-arm64
 
       - name: Release

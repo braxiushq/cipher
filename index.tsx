@@ -4,8 +4,6 @@ import { rmSync, unlinkSync } from "node:fs";
 // SPDX-License-Identifier: AGPL-3.0-only
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { render } from "ink";
-import App from "./App";
 import {
 	cleanupSensitivePathsSync,
 	sweepResidue,
@@ -134,16 +132,25 @@ if (!process.stdin.isTTY) {
 	process.exit(1);
 }
 
+const isCompiledBinary = process.execPath.includes("cipher");
+
+if (isCompiledBinary || process.env.NODE_ENV === "production") {
+	delete process.env.DEV;
+}
+
 const screenHeight = process.stdout.rows ?? 24;
 
-let app: ReturnType<typeof render>;
-
 await sweepResidue();
+
+const { render } = await import("ink");
+const { default: App } = await import("./App");
+
+const app = render(<App screenHeight={screenHeight} />);
 
 process.on("uncaughtException", (err) => {
 	cleanupSensitivePathsSync();
 	sweepResidueSync();
-	if (app) app.unmount();
+	app.unmount();
 	console.clear();
 	console.error("Critical error:", err.message || err);
 	process.exit(1);
@@ -152,13 +159,11 @@ process.on("uncaughtException", (err) => {
 process.on("unhandledRejection", (reason) => {
 	cleanupSensitivePathsSync();
 	sweepResidueSync();
-	if (app) app.unmount();
+	app.unmount();
 	console.clear();
 	console.error("Unhandled promise rejection:", reason);
 	process.exit(1);
 });
-
-app = render(<App screenHeight={screenHeight} />);
 
 process.on("SIGINT", () => {
 	cleanupSensitivePathsSync();
