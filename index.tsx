@@ -1,6 +1,13 @@
 #!/usr/bin/env bun
 // SPDX-License-Identifier: AGPL-3.0-only
-import { renameSync, rmSync, unlinkSync } from "node:fs";
+import {
+	existsSync,
+	readFileSync,
+	renameSync,
+	rmSync,
+	unlinkSync,
+	writeFileSync,
+} from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import {
@@ -23,6 +30,41 @@ function getConfigDir(): string {
 		return join(homedir(), "AppData", "Roaming", "cipher");
 	}
 	return join(homedir(), ".config", "cipher");
+}
+
+function removeWindowsPowerShellShim(): void {
+	const profiles = [
+		join(homedir(), "Documents", "WindowsPowerShell", "Microsoft.PowerShell_profile.ps1"),
+		join(homedir(), "Documents", "PowerShell", "Microsoft.PowerShell_profile.ps1"),
+	];
+
+	for (const profile of profiles) {
+		if (!existsSync(profile)) continue;
+
+		const content = readFileSync(profile, "utf8");
+		const next = content.replace(
+			/\r?\n?# Cipher CLI shim\r?\nfunction cipher \{\r?\n\s*& "[^"]+" @args\r?\n\}\r?\n?/g,
+			"\n",
+		);
+
+		if (next !== content) {
+			writeFileSync(profile, next.trimEnd() ? `${next.trimEnd()}\n` : "");
+		}
+	}
+}
+
+function removeWindowsPathEntry(): void {
+	const installDir = join(homedir(), "AppData", "Local", "Programs", "cipher");
+	const script = `
+$install = '${installDir.replaceAll("'", "''")}';
+$path = [Environment]::GetEnvironmentVariable('Path', 'User');
+if ($path) {
+  $parts = $path -split ';' | Where-Object { $_ -and ($_.TrimEnd('\\') -ine $install.TrimEnd('\\')) };
+  [Environment]::SetEnvironmentVariable('Path', ($parts -join ';'), 'User');
+}
+`;
+
+	Bun.spawnSync(["powershell.exe", "-NoProfile", "-Command", script]);
 }
 const command = args[0];
 
@@ -83,13 +125,16 @@ if (command === "uninstall") {
 	sweepResidueSync();
 
 	if (process.platform === "win32") {
+		removeWindowsPowerShellShim();
+		removeWindowsPathEntry();
+
 		try {
 			const doomed = `${process.execPath}.old`;
 			renameSync(process.execPath, doomed);
 			unlinkSync(doomed);
 		} catch {
 			console.log("");
-			console.log(`⚠️  Could not delete ${process.execPath}`);
+			console.log(`[!] Could not delete ${process.execPath}`);
 			console.log(
 				"   Delete it manually or restart your terminal and try again.",
 			);

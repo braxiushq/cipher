@@ -189,7 +189,7 @@ function validateBinary(path: string): void {
 		);
 	}
 	if (process.platform === "win32") {
-		if (buf.equals(PE_MAGIC)) return;
+		if (buf.subarray(0, PE_MAGIC.length).equals(PE_MAGIC)) return;
 		throw new Error(
 			"Downloaded file is not a valid binary. This may be a temporary issue. Try again later.",
 		);

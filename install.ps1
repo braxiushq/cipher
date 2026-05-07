@@ -14,6 +14,12 @@ function Fail($Message) {
 Write-Host "Cipher - Encrypted. Private. Yours." -ForegroundColor Cyan
 Write-Host ""
 
+if (-not $env:WT_SESSION) {
+    Write-Host "Tip: For the best experience, use Windows Terminal." -ForegroundColor Yellow
+    Write-Host "It has better font rendering, colors, and resizing support than legacy PowerShell." -ForegroundColor Yellow
+    Write-Host ""
+}
+
 $Repo = "braxius-hq/cipher"
 $InstallDir = Join-Path $env:LOCALAPPDATA "Programs\cipher"
 $Target = Join-Path $InstallDir "cipher-cli.exe"
