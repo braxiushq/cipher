@@ -20,8 +20,12 @@ $Target = Join-Path $InstallDir "cipher.exe"
 $TempFile = $null
 
 try {
-    $arch = [System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture
-    if ($arch -ne "X64") {
+    $arch = $env:PROCESSOR_ARCHITECTURE
+    if ($env:PROCESSOR_ARCHITEW6432) {
+        $arch = $env:PROCESSOR_ARCHITEW6432
+    }
+
+    if ($arch -ne "AMD64") {
         return Fail "Unsupported architecture $arch. Only Windows x64 is currently supported."
     }
 
