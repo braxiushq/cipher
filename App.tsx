@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
-import { Box } from "ink";
+import { Box, useWindowSize } from "ink";
 import { useEffect, useState } from "react";
 import { Spinner } from "./components/ui";
 import { COLORS } from "./lib/colors";
@@ -13,7 +13,8 @@ import WelcomeScreen from "./screens/WelcomeScreen";
 
 type Screen = "welcome" | "login" | "signup" | "status";
 
-export default function App({ screenHeight }: { screenHeight: number }) {
+export default function App() {
+	const { rows } = useWindowSize();
 	const [screen, setScreen] = useState<Screen>("welcome");
 	const [isReady, setIsReady] = useState(false);
 	const [updateVersion, setUpdateVersion] = useState<string | null>(null);
@@ -39,7 +40,7 @@ export default function App({ screenHeight }: { screenHeight: number }) {
 			<Box
 				flexDirection="column"
 				width="100%"
-				height={screenHeight}
+				height={rows}
 				justifyContent="center"
 				alignItems="center"
 			>
@@ -51,7 +52,7 @@ export default function App({ screenHeight }: { screenHeight: number }) {
 	return (
 		<Box
 			flexDirection="column"
-			height={screenHeight}
+			height={rows}
 			width="100%"
 			borderStyle="single"
 			borderColor={COLORS.ACCENT}

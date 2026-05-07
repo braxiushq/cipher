@@ -140,14 +140,12 @@ if (isCompiledBinary || process.env.NODE_ENV === "production") {
 	delete process.env.DEV;
 }
 
-const screenHeight = process.stdout.rows ?? 24;
-
 await sweepResidue();
 
 const { render } = await import("ink");
 const { default: App } = await import("./App");
 
-const app = render(<App screenHeight={screenHeight} />);
+const app = render(<App />);
 
 process.on("uncaughtException", (err) => {
 	cleanupSensitivePathsSync();
