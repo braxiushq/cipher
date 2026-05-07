@@ -38,12 +38,30 @@ function Remove-OldPowerShellShim {
         }
 
         try {
-            $content = Get-Content $profilePath -Raw
-            $pattern = '(?s)\r?\n?# Cipher CLI shim\r?\nfunction cipher \{\r?\n\s*& "[^\r\n]+" @args\r?\n\}\r?\n?'
-            $next = $content -replace $pattern, "`n"
+            $lines = Get-Content $profilePath
+            $next = New-Object System.Collections.Generic.List[string]
+            $skipping = $false
+            $changed = $false
 
-            if ($next -ne $content) {
-                Set-Content -Path $profilePath -Value $next.TrimEnd() -Encoding UTF8
+            foreach ($line in $lines) {
+                if ($line.Trim() -eq "# Cipher CLI shim") {
+                    $skipping = $true
+                    $changed = $true
+                    continue
+                }
+
+                if ($skipping) {
+                    if ($line.Trim() -eq "}") {
+                        $skipping = $false
+                    }
+                    continue
+                }
+
+                $next.Add($line)
+            }
+
+            if ($changed) {
+                Set-Content -Path $profilePath -Value $next.ToArray() -Encoding UTF8
                 Write-Host "Removed old PowerShell profile shim from $profilePath" -ForegroundColor Yellow
             }
         } catch {
