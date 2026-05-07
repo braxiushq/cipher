@@ -39,7 +39,8 @@ function Remove-OldPowerShellShim {
 
         try {
             $content = Get-Content $profilePath -Raw
-            $next = $content -replace "(?s)\r?\n?# Cipher CLI shim\r?\nfunction cipher \{\r?\n\s*& \"[^\"]+\" @args\r?\n\}\r?\n?", "`n"
+            $pattern = '(?s)\r?\n?# Cipher CLI shim\r?\nfunction cipher \{\r?\n\s*& "[^\r\n]+" @args\r?\n\}\r?\n?'
+            $next = $content -replace $pattern, "`n"
 
             if ($next -ne $content) {
                 Set-Content -Path $profilePath -Value $next.TrimEnd() -Encoding UTF8
@@ -103,7 +104,8 @@ try {
     }
 
     $pathItems = $userPath -split ";" | Where-Object { $_ }
-    $isOnPath = $pathItems | Where-Object { $_.TrimEnd("\") -ieq $InstallDir.TrimEnd("\") }
+    $normalizedInstallDir = $InstallDir.TrimEnd([char]92)
+    $isOnPath = $pathItems | Where-Object { $_.TrimEnd([char]92) -ieq $normalizedInstallDir }
 
     if (-not $isOnPath) {
         $newPath = if ($userPath) { "$InstallDir;$userPath" } else { $InstallDir }
@@ -111,8 +113,8 @@ try {
         $env:Path = "$env:Path;$InstallDir"
         Write-Host "Added $InstallDir to your user PATH." -ForegroundColor Yellow
         Write-Host "Open a new terminal before running cipher." -ForegroundColor Yellow
-    } elseif ($pathItems[0].TrimEnd("\") -ine $InstallDir.TrimEnd("\")) {
-        $remainingPath = $pathItems | Where-Object { $_.TrimEnd("\") -ine $InstallDir.TrimEnd("\") }
+    } elseif ($pathItems[0].TrimEnd([char]92) -ine $normalizedInstallDir) {
+        $remainingPath = $pathItems | Where-Object { $_.TrimEnd([char]92) -ine $normalizedInstallDir }
         $newPath = "$InstallDir;$($remainingPath -join ';')"
         [Environment]::SetEnvironmentVariable("Path", $newPath, "User")
         $env:Path = "$InstallDir;$env:Path"
