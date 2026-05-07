@@ -30,7 +30,7 @@ function getInstallDir(): string {
 }
 
 function getBinaryName(): string {
-	return process.platform === "win32" ? "cipher.exe" : "cipher";
+	return process.platform === "win32" ? "cipher-cli.exe" : "cipher";
 }
 
 interface GitHubAsset {

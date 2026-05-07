@@ -18,6 +18,8 @@ curl -sL https://raw.githubusercontent.com/braxius-hq/cipher/main/install.sh | b
 irm https://raw.githubusercontent.com/braxius-hq/cipher/main/install.ps1 | iex
 ```
 
+On Windows, the installer also provides `cipher-cli` because `cipher` is a built-in Windows command.
+
 ## Table of Contents
 
 - [Quick Install](#quick-install)
@@ -77,6 +79,8 @@ curl -sL https://raw.githubusercontent.com/braxius-hq/cipher/main/install.sh | b
 ```powershell
 irm https://raw.githubusercontent.com/braxius-hq/cipher/main/install.ps1 | iex
 ```
+
+Windows users can run `cipher` from PowerShell after opening a new terminal, or `cipher-cli` from any terminal.
 
 ### From Source (Requires Bun)
 
