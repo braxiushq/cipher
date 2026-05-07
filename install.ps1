@@ -7,6 +7,7 @@ $ErrorActionPreference = "Stop"
 function Fail($Message) {
     Write-Host "Error: $Message" -ForegroundColor Red
     Write-Host "Installation did not complete."
+    Read-Host "Press Enter to close"
     return $false
 }
 
@@ -74,6 +75,7 @@ try {
     Write-Host ""
     Write-Host "Cipher v$version installed to $Target" -ForegroundColor Green
     Write-Host "Run 'cipher' in a new terminal to get started."
+    Read-Host "Press Enter to close"
 } catch {
     if ($TempFile -and (Test-Path $TempFile)) {
         Remove-Item $TempFile -Force -ErrorAction SilentlyContinue
