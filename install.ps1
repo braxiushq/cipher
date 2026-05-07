@@ -2,68 +2,81 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 
 $ErrorActionPreference = "Stop"
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+function Fail($Message) {
+    Write-Host "Error: $Message" -ForegroundColor Red
+    Write-Host "Installation did not complete."
+    return $false
+}
 
 Write-Host "Cipher - Encrypted. Private. Yours." -ForegroundColor Cyan
 Write-Host ""
 
 $Repo = "braxius-hq/cipher"
-$InstallDir = "$env:LOCALAPPDATA\Programs\cipher"
-$BinaryName = "cipher.exe"
+$InstallDir = Join-Path $env:LOCALAPPDATA "Programs\cipher"
+$Target = Join-Path $InstallDir "cipher.exe"
+$TempFile = $null
 
-$arch = [System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture
-if ($arch -ne "X64") {
-    Write-Host "Error: Unsupported architecture $arch. Only x64 is currently supported." -ForegroundColor Red
-    exit 1
-}
-
-Write-Host "Fetching latest release..."
 try {
+    $arch = [System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture
+    if ($arch -ne "X64") {
+        return Fail "Unsupported architecture $arch. Only Windows x64 is currently supported."
+    }
+
+    Write-Host "Fetching latest release..."
     $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases/latest" -UseBasicParsing
-} catch {
-    Write-Host "Error: Could not fetch release info. $_" -ForegroundColor Red
-    exit 1
-}
 
-$asset = $release.assets | Where-Object { $_.name -match "windows-amd64\.exe$" } | Select-Object -First 1
-if (-not $asset) {
-    Write-Host "Error: No Windows binary found in release $($release.tag_name)." -ForegroundColor Red
-    exit 1
-}
+    $asset = $release.assets | Where-Object { $_.name -match "^cipher-.*-windows-amd64\.exe$" } | Select-Object -First 1
+    if (-not $asset) {
+        return Fail "No Windows x64 binary found in release $($release.tag_name)."
+    }
 
-$version = $release.tag_name -replace '^v', ''
-$tempFile = Join-Path $env:TEMP "cipher-$version.exe"
+    $version = $release.tag_name -replace '^v', ''
+    $TempFile = Join-Path $env:TEMP "cipher-$version.exe"
 
-Write-Host "Installing Cipher v$version (~100 MB)..."
-try {
-    Invoke-WebRequest -Uri $asset.browser_download_url -OutFile $tempFile -UseBasicParsing
-} catch {
-    Write-Host "Error: Download failed. $_" -ForegroundColor Red
-    if (Test-Path $tempFile) { Remove-Item $tempFile -Force }
-    exit 1
-}
+    Write-Host "Downloading Cipher v$version..."
+    Invoke-WebRequest -Uri $asset.browser_download_url -OutFile $TempFile -UseBasicParsing
 
-$bytes = [System.IO.File]::ReadAllBytes($tempFile)
-if ($bytes.Length -lt 2 -or $bytes[0] -ne 0x4D -or $bytes[1] -ne 0x5A) {
-    Write-Host "Error: Downloaded file is not a valid Windows binary." -ForegroundColor Red
-    Write-Host "This may be a temporary issue. Try again later." -ForegroundColor Red
-    Remove-Item $tempFile -Force
-    exit 1
-}
+    $file = [System.IO.File]::OpenRead($TempFile)
+    try {
+        $header = New-Object byte[] 2
+        $read = $file.Read($header, 0, 2)
+    } finally {
+        $file.Dispose()
+    }
 
-New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
-$target = Join-Path $InstallDir $BinaryName
-Move-Item -Path $tempFile -Destination $target -Force
+    if ($read -ne 2 -or $header[0] -ne 0x4D -or $header[1] -ne 0x5A) {
+        Remove-Item $TempFile -Force -ErrorAction SilentlyContinue
+        return Fail "Downloaded file is not a valid Windows executable. Try again later."
+    }
 
-$userPath = [Environment]::GetEnvironmentVariable("Path", "User")
-if ($userPath -notlike "*$InstallDir*") {
-    [Environment]::SetEnvironmentVariable("Path", "$userPath;$InstallDir", "User")
-    $env:Path = "$env:Path;$InstallDir"
+    New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
+    Move-Item -Path $TempFile -Destination $Target -Force
+    $TempFile = $null
+
+    $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+    if ([string]::IsNullOrWhiteSpace($userPath)) {
+        $userPath = ""
+    }
+
+    $pathItems = $userPath -split ";" | Where-Object { $_ }
+    $isOnPath = $pathItems | Where-Object { $_.TrimEnd("\") -ieq $InstallDir.TrimEnd("\") }
+
+    if (-not $isOnPath) {
+        $newPath = if ($userPath) { "$userPath;$InstallDir" } else { $InstallDir }
+        [Environment]::SetEnvironmentVariable("Path", $newPath, "User")
+        $env:Path = "$env:Path;$InstallDir"
+        Write-Host "Added $InstallDir to your user PATH." -ForegroundColor Yellow
+        Write-Host "Open a new terminal before running cipher." -ForegroundColor Yellow
+    }
+
     Write-Host ""
-    Write-Host "Added $InstallDir to your PATH." -ForegroundColor Yellow
-    Write-Host "Restart your terminal for PATH changes to take effect." -ForegroundColor Yellow
+    Write-Host "Cipher v$version installed to $Target" -ForegroundColor Green
+    Write-Host "Run 'cipher' in a new terminal to get started."
+} catch {
+    if ($TempFile -and (Test-Path $TempFile)) {
+        Remove-Item $TempFile -Force -ErrorAction SilentlyContinue
+    }
+    Fail $_.Exception.Message | Out-Null
 }
-
-Write-Host ""
-Write-Host "Cipher v$version installed to $target" -ForegroundColor Green
-Write-Host ""
-Write-Host "Run 'cipher' in a new terminal to get started."
