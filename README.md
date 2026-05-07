@@ -14,7 +14,9 @@ curl -sL https://raw.githubusercontent.com/braxius-hq/cipher/main/install.sh | b
 
 ### Windows (Beta)
 
-Download the latest `cipher-*-windows-amd64.exe` from [Releases](https://github.com/braxius-hq/cipher/releases).
+```powershell
+irm https://raw.githubusercontent.com/braxius-hq/cipher/main/install.ps1 | iex
+```
 
 ## Table of Contents
 
@@ -64,8 +66,16 @@ Cipher implements strict end-to-end encryption. Your data is encrypted locally b
 
 ### One-Line Installer
 
+**Linux / macOS:**
+
 ```bash
 curl -sL https://raw.githubusercontent.com/braxius-hq/cipher/main/install.sh | bash
+```
+
+**Windows (PowerShell):**
+
+```powershell
+irm https://raw.githubusercontent.com/braxius-hq/cipher/main/install.ps1 | iex
 ```
 
 ### From Source (Requires Bun)
