@@ -125,7 +125,8 @@ export default function SignupScreen({ onBack, onSuccess }: Props) {
 			if (
 				data &&
 				typeof data === "object" &&
-				("session" in data || "token" in data)
+				(("session" in data && !!data.session) ||
+					("token" in data && !!data.token))
 			) {
 				onSuccess();
 			} else {
