@@ -1,5 +1,6 @@
 #!/usr/bin/env bun
 // SPDX-License-Identifier: AGPL-3.0-only
+import React from "react";
 import { renameSync, rmSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import {
@@ -158,7 +159,7 @@ await sweepResidue();
 const { render } = await import("ink");
 const { default: App } = await import("./App");
 
-const app = render(<App />);
+const app = render(React.createElement(App));
 
 process.on("uncaughtException", (err) => {
 	cleanupSensitivePathsSync();
